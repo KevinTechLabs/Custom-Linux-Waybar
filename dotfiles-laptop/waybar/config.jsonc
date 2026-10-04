@@ -9,7 +9,7 @@
   "spacing": 6,
 
   "modules-left": ["group/ws", "clock", "custom/scram", "custom/tailscale"],
-  "modules-center": ["custom/cpu", "custom/ram", "custom/reactor", "custom/ssd"],
+  "modules-center": ["custom/cpu", "custom/ram", "custom/reactor", "custom/ssd", "custom/ping"],
   "modules-right": ["group/controls"],
 
   // Workspaces: our own buttons (hyprctl-driven), grouped into one capsule
@@ -109,6 +109,14 @@
     "exec": "~/.config/waybar/scripts/stats.sh ssd",
     "return-type": "json",
     "interval": 30
+  },
+
+  // Ping: latency │ packet loss. Amber when slow or dropping packets, red when offline.
+  "custom/ping": {
+    "exec": "~/.config/waybar/scripts/stats.sh ping",
+    "return-type": "json",
+    "interval": 10,
+    "on-click": "kitty --class reactor-monitor -e ping 1.1.1.1"
   },
 
   // Volume, brightness and battery meters + mic and Bluetooth in one capsule

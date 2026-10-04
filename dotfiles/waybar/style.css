@@ -19,7 +19,7 @@ window#waybar { background: transparent; color: @glow; }
 tooltip { background: @bg; border: 1px solid @glow; color: @glow; }
 
 #ws, #clock, #custom-scram, #custom-tailscale, #custom-launcher,
-#custom-cpu, #custom-ram, #custom-reactor, #custom-gpu, #custom-ssd,
+#custom-cpu, #custom-ram, #custom-reactor, #custom-gpu, #custom-ssd, #custom-ping,
 #controls {
   background: @bg;
   color: @glow;
@@ -89,17 +89,18 @@ tooltip { background: @bg; border: 1px solid @glow; color: @glow; }
 }
 
 /* instrument panels */
-#custom-cpu, #custom-ram, #custom-gpu, #custom-ssd { padding: 0 11px; }
+#custom-cpu, #custom-ram, #custom-gpu, #custom-ssd, #custom-ping { padding: 0 11px; }
 
 /* stats: ok → warm (amber) → hot (flashing red) */
-#custom-cpu.warm, #custom-gpu.warm, #custom-ram.warm, #custom-ssd.warm {
+#custom-cpu.warm, #custom-gpu.warm, #custom-ram.warm, #custom-ssd.warm, #custom-ping.warm {
   color: @amber; border-color: @amber;
 }
-#custom-cpu.hot, #custom-gpu.hot, #custom-ram.hot, #custom-ssd.hot {
+#custom-cpu.hot, #custom-gpu.hot, #custom-ram.hot, #custom-ssd.hot, #custom-ping.hot {
   color: #000000; background: @red; border-color: @red;
   animation: alarm 0.8s steps(2) infinite;
 }
 #custom-cpu.na, #custom-gpu.na { color: @dim; border-color: @dim; }
+#custom-ping.offline { color: @red; border-color: @red; box-shadow: none; }   /* no wifi: red, but no flashing */
 
 @keyframes alarm {
   0%   { background: @red; color: #000000; }

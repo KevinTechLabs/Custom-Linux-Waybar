@@ -60,7 +60,7 @@ Same design, tuned for laptops. The installer picks it **automatically when a ba
 
 | | 🖥️ Desktop | 💻 Laptop |
 |---|---|---|
-| **Bar center** | CPU · RAM · ☢️ · GPU · SSD | CPU · RAM · ☢️ · SSD |
+| **Bar center** | CPU · RAM · ☢️ · GPU · SSD | CPU · RAM · ☢️ · SSD · 📡 PING |
 | **Bar right** | 🔊 volume meter | 🔊 volume · ☀️ brightness · 🔋 battery meters |
 | **Sidebar core** | CPU · RAM · GPU · SSD | CPU · RAM · SSD · 🌀 **fan RPM** |
 | **Power grid** | CPU + GPU watts | 🔋 battery draw · time left · CPU watts |
@@ -70,6 +70,7 @@ Same design, tuned for laptops. The installer picks it **automatically when a ba
 - 🔋 Battery meter pulses while charging, turns **amber at 25%** and **flashes red at 10%** — hover for watts and time left
 - ☀️ Scroll the brightness meter to adjust (never goes fully black)
 - 🖱️ Right-click the battery to cycle power profiles
+- 📡 **PING** shows latency │ packet loss to 1.1.1.1 — amber when slow (80 ms+) or dropping packets, red when you're offline. Click for a live ping
 
 ---
 

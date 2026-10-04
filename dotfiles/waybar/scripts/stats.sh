@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # ☢ Instrument-panel modules for Waybar: two readings per module.
-# usage: stats.sh cpu | gpu | ram | ssd
+# usage: stats.sh cpu | gpu | ram | ssd | ping
 #   CPU  load% │ temp      GPU  load% │ temp
 #   RAM  used  │ /total    SSD  used% │ temp
+#   PING latency │ loss%    (laptop; target = \$REACTOR_PING_HOST or 1.1.1.1)
 
 DIM="#1f8f0b"
 state="${XDG_RUNTIME_DIR:-/tmp}/reactor-cpu.stat"
@@ -72,5 +73,19 @@ case ${1:-cpu} in
     t=$(hwtemp nvme); t=${t:-0}
     cls=$(worst "$(level "$pct" 80 92)" "$(level "$t" 60 70)")
     emit "SSD" "${pct}%" "${t}°C" "$cls" "Disk /: ${used} / ${size} used (${pct}%)\nSSD temp: ${t}°C"
+    ;;
+
+  ping)
+    host=${REACTOR_PING_HOST:-1.1.1.1}
+    out=$(LC_ALL=C ping -n -q -c 3 -i 0.2 -W 1 "$host" 2>/dev/null)
+    loss=$(grep -oE '[0-9.]+% packet loss' <<< "$out" | cut -d% -f1); loss=${loss%.*}; loss=${loss:-100}
+    avg=$(awk -F/ '/^rtt|^round-trip/{printf "%d", $5 + 0.5}' <<< "$out")
+    if [[ -z $avg ]] || (( loss >= 100 )); then
+      emit "PING" "--" "OFFLINE" "offline" "Ping ${host}: no reply\nNo connection (or ICMP blocked)"
+    else
+      lcls=ok; (( loss > 0 )) && lcls=warm; (( loss >= 50 )) && lcls=hot
+      cls=$(worst "$(level "$avg" 80 200)" "$lcls")
+      emit "PING" "${avg}ms" "${loss}%" "$cls" "Ping ${host}: ${avg} ms average\nPacket loss: ${loss}%\nClick for a live ping"
+    fi
     ;;
 esac
