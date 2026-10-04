@@ -1,4 +1,4 @@
-# ☢ Custom-Linux-Waybar — REACTOR
+# ☢️ Custom-Linux-Waybar — REACTOR
 
 <p align="center">
   <img src="preview.webp" alt="REACTOR desktop: green nuclear-reactor Waybar, Super+Z sidebar, terminal dashboard and 4K wallpaper" width="100%">
