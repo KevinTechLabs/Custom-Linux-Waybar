@@ -1,0 +1,96 @@
+/* ☢ REACTOR — rofi theme (command line) */
+
+* {
+  glow:   #39ff14;
+  dim:    #1f8f0b;
+  deep:   #0f3d08;
+  bg:     #040e03f5;
+  font:   "JetBrainsMono Nerd Font Bold 12";
+
+  background-color: transparent;
+  text-color:       @glow;
+  margin:  0;
+  padding: 0;
+  spacing: 0;
+}
+
+window {
+  location:         center;
+  width:            560px;
+  background-color: @bg;
+  border:           2px;
+  border-color:     @glow;
+  border-radius:    4px;
+}
+
+mainbox {
+  padding:  10px;
+  spacing:  8px;
+  children: [ inputbar, listview, status ];
+}
+
+inputbar {
+  padding:      8px 10px;
+  spacing:      10px;
+  border:       1px;
+  border-color: @glow;
+  border-radius: 2px;
+  children:     [ prompt, entry ];
+}
+
+prompt { text-color: @glow; }
+
+entry {
+  placeholder:       "type to search";
+  placeholder-color: @dim;
+  cursor:            text;
+}
+
+listview {
+  lines:        10;
+  columns:      1;
+  fixed-height: true;
+  expand:       true;
+  scrollbar:    false;
+  spacing:      2px;
+}
+
+element {
+  padding:       6px 10px;
+  spacing:       10px;
+  border-radius: 2px;
+  text-color:    @glow;
+}
+element normal.normal,
+element alternate.normal { background-color: transparent; text-color: @glow; }
+element selected.normal  { background-color: @glow;       text-color: #000000; }
+element normal.urgent,
+element alternate.urgent { text-color: #ff2a2a; }
+element selected.urgent  { background-color: #ff2a2a;     text-color: #000000; }
+
+element-icon {
+  size:             20px;
+  vertical-align:   0.5;
+}
+element-text {
+  text-color:       inherit;
+  vertical-align:   0.5;
+  highlight:        bold underline;
+}
+
+/* footer: "3 / 37 matches" */
+status {
+  orientation:  horizontal;
+  expand:       false;
+  padding:      6px 4px 0 4px;
+  border:       1px 0 0 0;
+  border-color: @deep;
+  children:     [ num-filtered-rows, textbox-slash, num-rows, textbox-label ];
+}
+num-filtered-rows, num-rows { text-color: @dim; expand: false; }
+textbox-slash { expand: false; str: " / "; text-color: @dim; }
+textbox-label { expand: true;  str: " matches"; text-color: @dim; }
+
+/* error / message boxes */
+message { padding: 6px; border: 1px; border-color: @dim; }
+textbox { text-color: @glow; }

@@ -1,157 +1,157 @@
-# Custom-Linux-Waybar — Nuclear Reactor Dotfiles
+# ☢ Custom-Linux-Waybar — REACTOR
 
 <p align="center">
-  <img src="waybar-preview.webp" alt="Green Nuclear Reactor Waybar preview" width="100%">
+  <img src="preview.webp" alt="REACTOR desktop: green nuclear-reactor Waybar, Super+Z sidebar, terminal dashboard and 4K wallpaper" width="100%">
 </p>
 
-A complete **CachyOS / Arch Linux + Hyprland nuclear-reactor rice** built around the original Waybar setup.
+A complete **nuclear-reactor themed Hyprland rice** for CachyOS / Arch Linux.
+Radioactive-green Waybar, a slide-out control-room sidebar, a live terminal
+dashboard, a fullscreen power menu, a matching launcher and a 4K wallpaper —
+all wired together and installable with one command.
 
-The repository is organized as a real dotfiles collection: each application owns its configuration under `dotfiles/`, while the installer links everything into `~/.config` without hard-coding the repository location.
+---
 
+## What's inside
 
-## Features
+### Waybar
+| Module | What it does |
+|---|---|
+| **Workspaces 1–5** | Click to switch, scroll to cycle. Active = solid green, has windows = bright, empty = dim. Works with both classic and Lua (0.55+) Hyprland dispatch. |
+| **Clock** | Click for date + seconds, hover for a calendar. |
+| **⏻ Power** | Opens the fullscreen REACTOR SHUTDOWN CONTROL menu. |
+| **[ 󰌾 ] VPN** | Tailscale status. Click to connect / disconnect. Shows the **state (US) or country** when you route through an exit node. |
+| **CPU · RAM · GPU · SSD** | Instrument panels with two readings each. Turn **amber** when warm and **flash red** when critical. |
+| **☢ REACTOR ONLINE** | Your power profile. Click to cycle **IDLE → ONLINE → OVERDRIVE**; right-click opens a live monitor. |
+| **Volume** | `󰕾 [██████░░░░░░░░░░░░░░] 30%` meter — scroll to adjust, click to mute, turns **red at 0%**. |
+| **Mic · Bluetooth** | Click to mute / open Bluetooth manager, right-click for the mixer / power toggle. |
 
-- ☢️ Nuclear reactor status indicator
-- 🌡️ CPU & GPU temperature telemetry
-- 01–05 fixed Hyprland workspaces
-- 🕒 Clock, network, Bluetooth, microphone, VPN, volume, and brightness
-- 🟢 Nuclear-green Waybar styling with warning/critical thermal states
-- 🚀 Nuclear Rofi launcher as its own dotfile
-- 🖥️ Hyprland, Hyprlock, and Hypridle configuration
-- 🐈 Kitty terminal theme
-- 📊 Fastfetch system information
-- 📈 btop with a matching nuclear theme
-- ⏻ wlogout power menu
-- 🔗 Symlink-based installation with automatic backups
-- 🔄 Update and uninstall helpers
+### Super + Z sidebar (eww)
+A control-room panel that slides out from the left (animated by Hyprland on the GPU):
+
+- **Core status** — uptime, radiation trefoil with CPU / GPU / RAM / SSD around it
+- **Reactor mode** — power-saver / balanced / performance buttons
+- **Containment** — VPN, Bluetooth, speaker and mic toggles
+- **Power grid** — live CPU + GPU watts with a 60-second graph
+- **GPU** — VRAM, core / memory clocks, load and temperature
+- **Uplink** — live download / upload speed with a graph
+- **Maintenance** — pending pacman + AUR updates, one-click **UPDATE**
+
+### Terminal (kitty + fish)
+- New windows open a **REACTOR CORE dashboard**: the trefoil (a real image in kitty), and big CPU / GPU / RAM / DISK cards with filling bars
+- `☢ REACTOR [ONLINE] ~ ›` prompt that turns red with `[FAULT n]` when a command fails
+- Type `core` to show the dashboard again, `reactor` for the live monitor
+
+### Everything else
+- **Rofi launcher** — `☢ LAUNCH ›` command-line style with a match counter
+- **Power menu** — fullscreen, five big tiles (lock · sleep · log out · reboot · shutdown)
+- **4K wallpaper** — top-down reactor core (`wallpapers/reactor-core-4k.png`)
+- **kitty** colours, **btop** theme, **hyprlock** and **hypridle**
+
+---
 
 ## Install
 
 ```bash
-git clone https://github.com/marcottejkevin-art/Custom-Linux-Waybar.git
+git clone https://github.com/KevinTechLabs/Custom-Linux-Waybar.git
 cd Custom-Linux-Waybar
 bash install.sh
 ```
 
-The installer creates symlinks into `~/.config` and backs up existing files before replacing them. Your original configuration is not deleted by the installer.
+Then **reload Hyprland** (or log out and back in) and open a new kitty window.
 
-After installation, restart Waybar:
+The installer:
+- **links** every file in `dotfiles/` into `~/.config`, so `git pull` updates you instantly
+- **backs up** anything it replaces as `*.backup-<date>` — nothing is deleted
+- adds **one line each** to your `config.fish`, `kitty.conf` and Hyprland config (fully removed by the uninstaller)
+- copies the wallpaper to `~/Pictures/Wallpapers/` (and sets it if you use `swww`)
+- tells you which packages are missing, with the exact `pacman` command
+
+### Packages
 
 ```bash
-pkill waybar 2>/dev/null || true
-waybar >/tmp/waybar.log 2>&1 &
+sudo pacman -S --needed waybar rofi eww kitty fish socat pacman-contrib \
+  power-profiles-daemon wireplumber pavucontrol bluez-utils tailscale \
+  ttf-jetbrains-mono-nerd
 ```
 
-## Dotfiles
+`eww` may be in the AUR on some systems (`paru -S eww`). Tailscale is optional.
 
-```text
-dotfiles/
-├── btop/
-│   ├── btop.conf
-│   └── themes/
-│       └── nuclear.theme
-├── fastfetch/
-│   └── config.jsonc
-├── hypr/
-│   ├── hyprland.conf
-│   ├── hypridle.conf
-│   └── hyprlock.conf
-├── kitty/
-│   └── kitty.conf
-├── rofi/
-│   └── nuclear.rasi
-├── waybar/
-│   ├── config.jsonc
-│   ├── style.css
-│   ├── tailscale.sh
-│   ├── tailscale-toggle.sh
-│   └── scripts/
-│       ├── cpu-status.sh
-│       ├── gpu-status.sh
-│       ├── mic.sh
-│       ├── reactor.sh
-│       ├── temps.sh
-│       └── vpn.sh
-└── wlogout/
-    ├── layout
-    └── style.css
+### Optional: CPU watts in the sidebar
+Linux only lets root read the CPU's power sensor. To show CPU watts:
+
+```bash
+sudo cp system/reactor-rapl.conf /etc/tmpfiles.d/ && sudo systemd-tmpfiles --create
 ```
 
-## Repository layout
+Delete `/etc/tmpfiles.d/reactor-rapl.conf` to undo it.
+
+### Optional: full Hyprland config
+By default the installer only *adds* to your existing Hyprland config. If you want
+the complete REACTOR `hyprland.conf` (classic syntax) as a starting point:
+
+```bash
+bash install.sh --with-hyprland-conf
+```
+
+---
+
+## Controls
+
+| Where | Action | Result |
+|---|---|---|
+| Keyboard | `Super + Z` | Open / close the sidebar |
+| Workspaces | click · scroll | Switch · cycle |
+| ☢ badge | click · right-click | Cycle power profile · live monitor |
+| Volume | scroll · click · right-click | Adjust · mute · mixer |
+| VPN | click | Connect / disconnect Tailscale |
+| ⏻ | click | Fullscreen power menu |
+| Terminal | `core` · `reactor` | Dashboard · live monitor |
+
+## Update · Uninstall
+
+```bash
+bash scripts/update.sh   # git pull + relink
+bash uninstall.sh        # remove links and added lines; backups stay
+```
+
+---
+
+## Layout
 
 ```text
 Custom-Linux-Waybar/
-├── dotfiles/             # Application configurations
-├── scripts/              # Install / update / uninstall helpers
-├── install.sh            # Main installer entry point
-├── uninstall.sh          # Main uninstall entry point
-├── README.md
-└── waybar-preview.webp
+├── dotfiles/                 # mirrors ~/.config
+│   ├── waybar/               # config.jsonc, style.css, scripts/
+│   ├── eww/reactor/          # Super+Z sidebar
+│   ├── reactor/              # terminal dashboard, fish prompt, trefoil
+│   ├── rofi/                 # launcher + power menu themes
+│   ├── kitty/  btop/  hypr/  # colours, theme, hyprlock, hypridle
+├── wallpapers/               # 4K reactor wallpaper
+├── system/                   # optional CPU-watts permission rule
+├── extras/                   # wallpaper generator script
+├── scripts/                  # install · update · uninstall
+├── install.sh  uninstall.sh
+└── preview.webp
 ```
 
-## Nuclear theme
+## Palette
 
-The visual language is intentionally consistent across the desktop:
+| | Hex | Use |
+|---|---|---|
+| 🟩 | `#39FF14` | glow — primary |
+| 🟢 | `#1F8F0B` | dim — labels, empty |
+| ⬛ | `#040E03` | panels |
+| 🟧 | `#FFB000` | warning / overdrive |
+| 🟥 | `#FF2A2A` | critical / shutdown |
 
-- `#39FF14` — radioactive green primary accent
-- `#B6FF9C` — readable green foreground
-- `#071407` — dark green panels
-- `#030A03` — near-black reactor background
-- `#FFF27A` — warning state
-- `#FF3030` — critical state
-- JetBrainsMono Nerd Font — primary typography
+Font: **JetBrainsMono Nerd Font**
 
-## Waybar layout
+## Troubleshooting
 
-The reactor bar is arranged as:
+- **Bar disappeared** — run `waybar` in a terminal to see the error.
+- **Workspace clicks / log out do nothing** — Hyprland 0.55+ with a Lua config changed `hyprctl dispatch`; the included scripts handle both, so re-run `bash install.sh`.
+- **Super+Z does nothing** — reload Hyprland. Test directly with `~/.config/eww/reactor/scripts/toggle.sh`.
+- **Old fastfetch still shows** — another file is printing it; the installer only comments out `fastfetch` lines in `config.fish`.
+- **Temps show 0** — CPU temps need `k10temp` / `coretemp`; GPU readings need `nvidia-smi` (NVIDIA) or `amdgpu`.
 
-```text
-LEFT                                      CENTER                         RIGHT
-01 02 03 04 05 | TIME | POWER | WIFI | BT | MIC | VPN | CPU TEMP | ☢ REACTOR ONLINE | GPU TEMP | VOLUME | BRIGHTNESS
-```
-
-The center reactor status is intentionally kept between CPU and GPU telemetry so it reads like a compact control-room dashboard.
-
-## Scripts
-
-### Install
-
-```bash
-bash install.sh
-```
-
-### Update
-
-Pull the latest dotfiles and relink them:
-
-```bash
-bash scripts/update.sh
-```
-
-### Uninstall
-
-Remove only the symlinks created by this repository:
-
-```bash
-bash uninstall.sh
-```
-
-Backups created during installation are left untouched.
-
-## Portability
-
-The temperature scripts do not hard-code a particular CPU or GPU. They use `sensors` and `nvidia-smi`, with a sensor fallback for systems without NVIDIA tooling.
-
-The dotfiles are designed for Arch-based Wayland systems, especially CachyOS + Hyprland, but most individual components can be used independently.
-
-## Notes
-
-- The Hyprland config is a clean starting point; adapt monitor and machine-specific rules to your hardware.
-- The Rofi configuration lives independently under `dotfiles/rofi/` so it can be installed or edited without touching Waybar.
-- The Waybar scripts are intentionally portable and use standard system tools where possible.
-
-## GitHub
-
-Repository name: `Custom-Linux-Waybar`
-
-The repository name is intentionally not hard-coded into the installer, so the dotfiles can be cloned from any fork or renamed repository.
+Built for CachyOS + Hyprland. Most pieces work on any Arch-based Wayland setup.

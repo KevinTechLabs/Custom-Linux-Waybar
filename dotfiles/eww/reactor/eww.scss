@@ -1,0 +1,89 @@
+// ☢ REACTOR — sidebar theme (GTK CSS via eww)
+$glow:  #39ff14;
+$dim:   #1f8f0b;
+$deep:  #0f3d08;
+$bg:    rgba(4, 14, 3, 0.97);
+$amber: #ffb000;
+$red:   #ff2a2a;
+
+* { all: unset; font-family: "JetBrainsMono Nerd Font", monospace; font-weight: bold; }
+
+// floating panel; the shell's padding leaves room so the glow is never clipped
+.shell { padding: 10px 12px 10px 8px; }
+.panel {
+  background-color: $bg;
+  color: $glow;
+  border: 2px solid $glow;
+  border-radius: 4px;
+  box-shadow: 0 0 8px rgba(57, 255, 20, 0.40);
+  padding: 14px;
+  font-size: 12px;
+  min-width: 262px;
+}
+
+.hd { border-bottom: 1px solid $deep; padding-bottom: 7px; }
+.title  { font-size: 14px; }
+.stable { color: $glow; }
+.uptime { color: $dim; font-size: 11px; }
+.sec    { color: $dim; font-size: 10px; letter-spacing: 2px; margin-top: 4px; }
+.loads  { color: $dim; font-size: 10px; }
+
+// ---- core schematic ----
+.core { padding: 6px 0; }
+.ring {
+  border: 1px dashed $dim;
+  border-radius: 999px;
+  padding: 14px;
+}
+.stat {
+  .k { color: $dim; font-size: 10px; }
+  .v { font-size: 15px; }
+  &.warm .v { color: $amber; }
+  &.hot  .v { color: $red; animation: alarm 0.8s steps(2) infinite; }
+}
+@keyframes alarm { 0% { color: $red; } 100% { color: $bg; } }
+
+// ---- buttons ----
+.tg {
+  border: 1px solid $dim;
+  border-radius: 3px;
+  padding: 7px 4px;
+  color: $glow;
+  .ic { font-size: 13px; }
+  &:hover { background-color: $deep; }
+  &.on { background-color: $glow; color: #000000; border-color: $glow; }
+  &.max.on { background-color: $amber; border-color: $amber; }
+}
+
+// ---- cooling ----
+.card { border: 1px solid $dim; border-radius: 3px; padding: 8px; }
+.fname { font-size: 11px; }
+.rpm { font-size: 11px; &.idle { color: $dim; } }
+.nofans { color: $dim; font-size: 10px; }
+.fbar {
+  trough   { background-color: $deep; min-height: 4px; border-radius: 1px; }
+  progress { background-color: $glow; min-height: 4px; border-radius: 1px; }
+}
+// faster fans pulse faster (GTK CSS can't rotate text)
+.spin { font-size: 13px; }
+.spin.stop { color: $dim; }
+.spin.slow { animation: pulse 2.4s ease-in-out infinite; }
+.spin.med  { animation: pulse 1.2s ease-in-out infinite; }
+.spin.fast { animation: pulse 0.5s ease-in-out infinite; color: $amber; }
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.25; } 100% { opacity: 1; } }
+
+// ---- footer ----
+.shutdown {
+  border: 1px solid $red;
+  border-radius: 3px;
+  color: $red;
+  padding: 8px;
+  &:hover { background-color: $red; color: #000000; }
+}
+
+// ---- power / gpu / network ----
+.big    { font-size: 22px; }
+.dimtxt { color: $dim; font-size: 11px; }
+.netv   { font-size: 12px; &.up { color: $dim; } }
+.pgraph, .ngraph { color: $glow; background-color: rgba(15, 61, 8, 0.35); margin: 2px 0; }
+.upd.pending { border-color: $amber; .big { color: $amber; } }

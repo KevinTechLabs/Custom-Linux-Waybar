@@ -1,143 +1,157 @@
+// ☢ REACTOR — Waybar config (v2)
 {
   "layer": "top",
   "position": "top",
-  "height": 42,
+  "height": 34,
   "margin-top": 6,
-  "margin-left": 8,
-  "margin-right": 8,
+  "margin-left": 10,
+  "margin-right": 10,
+  "spacing": 6,
 
-  "modules-left": [
-    "custom/ws1",
-    "custom/ws2",
-    "custom/ws3",
-    "custom/ws4",
-    "custom/ws5",
-    "clock",
-    "custom/power",
-    "network",
-    "bluetooth",
-    "custom/mic",
-    "custom/vpn"
-  ],
+  "modules-left": ["group/ws", "clock", "custom/scram", "custom/tailscale"],
+  "modules-center": ["custom/cpu", "custom/ram", "custom/reactor", "custom/gpu", "custom/ssd"],
+  "modules-right": ["group/controls"],
 
-  "modules-center": [
-    "custom/cpu-temp",
-    "custom/reactor",
-    "custom/gpu-temp"
-  ],
-
-  "modules-right": [
-    "pulseaudio",
-    "backlight"
-  ],
+  // Workspaces: our own buttons (hyprctl-driven), grouped into one capsule
+  "group/ws": {
+    "orientation": "horizontal",
+    "modules": ["custom/ws1", "custom/ws2", "custom/ws3", "custom/ws4", "custom/ws5"]
+  },
 
   "custom/ws1": {
-    "format": "01",
-    "on-click": "hyprctl dispatch 'hl.dsp.focus({ workspace = 1 })'",
-    "tooltip": false
+    "exec": "~/.config/waybar/scripts/ws.sh 1",
+    "return-type": "json",
+    "on-click": "~/.config/waybar/scripts/ws-go.sh 1",
+    "on-scroll-up": "~/.config/waybar/scripts/ws-go.sh e-1",
+    "on-scroll-down": "~/.config/waybar/scripts/ws-go.sh e+1"
   },
+
   "custom/ws2": {
-    "format": "02",
-    "on-click": "hyprctl dispatch 'hl.dsp.focus({ workspace = 2 })'",
-    "tooltip": false
+    "exec": "~/.config/waybar/scripts/ws.sh 2",
+    "return-type": "json",
+    "on-click": "~/.config/waybar/scripts/ws-go.sh 2",
+    "on-scroll-up": "~/.config/waybar/scripts/ws-go.sh e-1",
+    "on-scroll-down": "~/.config/waybar/scripts/ws-go.sh e+1"
   },
+
   "custom/ws3": {
-    "format": "03",
-    "on-click": "hyprctl dispatch 'hl.dsp.focus({ workspace = 3 })'",
-    "tooltip": false
+    "exec": "~/.config/waybar/scripts/ws.sh 3",
+    "return-type": "json",
+    "on-click": "~/.config/waybar/scripts/ws-go.sh 3",
+    "on-scroll-up": "~/.config/waybar/scripts/ws-go.sh e-1",
+    "on-scroll-down": "~/.config/waybar/scripts/ws-go.sh e+1"
   },
+
   "custom/ws4": {
-    "format": "04",
-    "on-click": "hyprctl dispatch 'hl.dsp.focus({ workspace = 4 })'",
-    "tooltip": false
+    "exec": "~/.config/waybar/scripts/ws.sh 4",
+    "return-type": "json",
+    "on-click": "~/.config/waybar/scripts/ws-go.sh 4",
+    "on-scroll-up": "~/.config/waybar/scripts/ws-go.sh e-1",
+    "on-scroll-down": "~/.config/waybar/scripts/ws-go.sh e+1"
   },
+
   "custom/ws5": {
-    "format": "05",
-    "on-click": "hyprctl dispatch 'hl.dsp.focus({ workspace = 5 })'",
-    "tooltip": false
+    "exec": "~/.config/waybar/scripts/ws.sh 5",
+    "return-type": "json",
+    "on-click": "~/.config/waybar/scripts/ws-go.sh 5",
+    "on-scroll-up": "~/.config/waybar/scripts/ws-go.sh e-1",
+    "on-scroll-down": "~/.config/waybar/scripts/ws-go.sh e+1"
   },
 
   "clock": {
-    "format": "[ ◷  {:%H:%M} ]",
-    "tooltip-format": "{:%A %d %B %Y}"
+    "format": "{:%H:%M}",
+    "format-alt": "{:%a %d %b  %H:%M:%S}",
+    "interval": 1,
+    "tooltip-format": "<tt>{calendar}</tt>",
+    "calendar": {
+      "format": { "today": "<span color='#000000' background='#39ff14'><b>{}</b></span>" }
+    }
   },
 
-  "custom/power": {
-    "format": "[ ⏻ ]",
-    "tooltip": "Power",
-    "on-click": "wlogout"
+  "custom/scram": {
+    "format": "⏻",
+    "tooltip-format": "Power menu",
+    "on-click": "~/.config/waybar/scripts/scram.sh"
   },
 
-  "network": {
-    "format-wifi": "[ 󰤨  {signalStrength}% ]",
-    "format-ethernet": "[ 󰈀 LAN ]",
-    "format-disconnected": "[ 󰤭 OFFLINE ]",
-    "tooltip-format": "{essid}\nSignal: {signalStrength}%",
-    "on-click": "nm-connection-editor"
-  },
-
-  "bluetooth": {
-    "format": "󰂯 {status}",
-    "format-disabled": "󰂲 OFF",
-    "format-off": "󰂲 OFF",
-    "format-on": "󰂯 ON",
-    "format-connected": "󰂯 {device_alias}",
-    "tooltip-format": "Bluetooth: {status}",
-    "on-click": "blueman-manager"
-  },
-
-  "custom/mic": {
+  "custom/tailscale": {
+    "exec": "~/.config/waybar/scripts/tailscale.sh",
     "return-type": "json",
-    "exec": "~/.config/waybar/scripts/mic.sh",
-    "interval": 2,
-    "on-click": "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"
+    "interval": 5,
+    "signal": 9,
+    "on-click": "~/.config/waybar/scripts/tailscale.sh toggle"
   },
 
-  "custom/vpn": {
+  "custom/cpu": {
+    "exec": "~/.config/waybar/scripts/stats.sh cpu",
     "return-type": "json",
-    "exec": "~/.config/waybar/scripts/vpn.sh",
-    "interval": 3,
-    "on-click": "~/.config/waybar/tailscale-toggle.sh",
-    "markup": "pango",
-    "tooltip": false
+    "interval": 3
   },
 
-  "custom/cpu-temp": {
+  "custom/ram": {
+    "exec": "~/.config/waybar/scripts/stats.sh ram",
     "return-type": "json",
-    "format": "{}",
-    "exec": "~/.config/waybar/scripts/cpu-status.sh",
-    "interval": 2
+    "interval": 3
   },
 
+  // Reactor badge = power profile. Click cycles IDLE → ONLINE → OVERDRIVE,
+  // right-click opens the full monitor.
   "custom/reactor": {
+    "exec": "~/.config/waybar/scripts/power-profile.sh",
     "return-type": "json",
-    "format": "{}",
-    "exec": "~/.config/waybar/scripts/reactor.sh",
-    "interval": 2,
-    "markup": true
+    "interval": 10,
+    "signal": 10,
+    "on-click": "~/.config/waybar/scripts/power-profile.sh cycle",
+    "on-click-right": "kitty --class reactor-monitor -e ~/.config/waybar/scripts/reactor-monitor.sh"
   },
 
-  "custom/gpu-temp": {
+  "custom/gpu": {
+    "exec": "~/.config/waybar/scripts/stats.sh gpu",
     "return-type": "json",
-    "format": "{}",
-    "exec": "~/.config/waybar/scripts/gpu-status.sh",
-    "interval": 2
+    "interval": 3
   },
 
-  "pulseaudio": {
-    "markup": true,
-    "format": "<span size=\"18000\">☢</span> {icon} {volume}%",
-    "format-muted": "<span size=\"18000\">☢</span> {icon} MUTED",
-    "format-icons": ["░░░░░░░░░░", "█░░░░░░░░░", "██░░░░░░░░", "███░░░░░░░", "████░░░░░░", "█████░░░░░", "██████░░░░", "███████░░░", "████████░░", "█████████░", "██████████"],
-    "on-click": "pavucontrol",
-    "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
-    "on-scroll-up": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+",
+  "custom/ssd": {
+    "exec": "~/.config/waybar/scripts/stats.sh ssd",
+    "return-type": "json",
+    "interval": 30
+  },
+
+  // Volume, mic and Bluetooth in one capsule
+  "group/controls": {
+    "orientation": "horizontal",
+    "modules": ["custom/volume", "pulseaudio#mic", "bluetooth"]
+  },
+
+  "custom/volume": {
+    "exec": "~/.config/waybar/scripts/volume.sh",
+    "return-type": "json",
+    "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+    "on-click-right": "pavucontrol -t 3",
+    "on-scroll-up": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+",
     "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
   },
 
-  "backlight": {
-    "format": "[ 󰃠 {percent}% ]",
-    "on-scroll-up": "brightnessctl set +5%",
-    "on-scroll-down": "brightnessctl set 5%-"
+  "pulseaudio#mic": {
+    "format": "{format_source}",
+    "format-source": "󰍬 {volume}%",
+    "format-source-muted": "󰍭 MUTE",
+    "tooltip-format": "Mic · click mute · right-click mixer",
+    "on-click": "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle",
+    "on-click-right": "pavucontrol -t 4",
+    "on-scroll-up": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SOURCE@ 5%+",
+    "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%-"
+  },
+
+  "bluetooth": {
+    "format": "󰂯",
+    "format-off": "󰂲",
+    "format-disabled": "󰂲",
+    "format-connected": "󰂱 {num_connections}",
+    "tooltip-format": "Bluetooth {status}",
+    "tooltip-format-connected": "{device_enumerate}",
+    "tooltip-format-enumerate-connected": "{device_alias}",
+    "on-click": "blueman-manager",
+    "on-click-right": "bluetoothctl show | grep -q 'Powered: yes' && bluetoothctl power off || bluetoothctl power on"
   }
 }

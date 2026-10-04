@@ -1,0 +1,152 @@
+;; ☢ REACTOR — core schematic sidebar (Super+Z)
+;; Lives in ~/.config/eww/reactor so it never clashes with another eww setup.
+
+(defpoll d :interval "2s"
+  :initial '{"up":"--","cpu":{"t":0,"l":0,"cls":"ok"},"gpu":{"t":0,"l":0,"cls":"ok"},"ram":{"p":0,"cls":"ok"},"ssd":{"p":0,"t":0,"cls":"ok"},"gpux":{"w":0,"wmax":0,"vu":0,"vt":0,"vp":0,"clk":0,"mclk":0},"pw":{"cpu":0,"gpu":0,"core":0,"cpu_ok":false},"net":{"if":"--","down":"0 B/s","up":"0 B/s","down_k":0,"up_k":0}}'
+  "~/.config/eww/reactor/scripts/data.py fast")
+
+(defpoll s :interval "3s"
+  :initial '{"profile":"balanced","vpn":false,"bt":false,"vol":0,"vol_muted":false,"mic_muted":false}'
+  "~/.config/eww/reactor/scripts/data.py slow")
+
+(defpoll u :interval "60s"
+  :initial '{"total":-1,"repo":0,"aur":0,"checked":"--","err":""}'
+  "~/.config/eww/reactor/scripts/updates.sh")
+
+(defwindow sidebar
+  :monitor 0
+  :geometry (geometry :x "0px" :y "20px" :width "310px" :height "92%" :anchor "left center")
+  :stacking "overlay"
+  :namespace "reactor-sidebar"   ;; Hyprland slides this layer in/out on the GPU
+  :exclusive false
+  :focusable false
+  (box :class "shell"            ;; a little room so the glow is never clipped
+    (panel)))
+
+;; ---------------------------------------------------------------- pieces
+(defwidget sec [t]
+  (label :class "sec" :halign "start" :text t))
+
+(defwidget stat [k v cls]
+  (box :class "stat ${cls}" :orientation "v" :space-evenly false
+    (label :class "k" :text k)
+    (label :class "v" :text v)))
+
+(defwidget tg [on ic t cmd ?cls]
+  (button :class "tg ${on ? 'on' : ''} ${cls}" :onclick cmd :timeout "15s" :hexpand true
+    (box :space-evenly false :spacing 6 :halign "center"
+      (label :class "ic" :text ic)
+      (label :text t))))
+
+;; ---------------------------------------------------------------- core
+(defwidget core []
+  (box :class "core" :space-evenly false :spacing 4
+    (box :orientation "v" :space-evenly true :spacing 34 :valign "center"
+      (stat :k "CPU" :v "${d.cpu.t}°C" :cls {d.cpu.cls})
+      (stat :k "RAM" :v "${d.ram.p}%" :cls {d.ram.cls}))
+    (box :class "ring" :hexpand true :halign "center"
+      (image :class "trefoil" :path "${EWW_CONFIG_DIR}/trefoil.png"
+             :image-width 104 :image-height 104))
+    (box :orientation "v" :space-evenly true :spacing 34 :valign "center"
+      (stat :k "GPU" :v "${d.gpu.t}°C" :cls {d.gpu.cls})
+      (stat :k "SSD" :v "${d.ssd.p}%" :cls {d.ssd.cls}))))
+
+;; ---------------------------------------------------------------- panel
+(defwidget panel []
+  (box :class "panel" :orientation "v" :space-evenly false :spacing 9
+
+    (box :class "hd" :space-evenly false
+      (label :class "title" :halign "start" :hexpand true :text "☢ CORE STATUS")
+      (label :class "stable" :text "● STABLE"))
+    (label :class "uptime" :halign "start" :text "online for ${d.up}")
+
+    (core)
+    (box :class "loads" :spacing 8
+      (label :text "cpu load ${d.cpu.l}%")
+      (label :text "gpu load ${d.gpu.l}%"))
+
+    (sec :t "REACTOR MODE")
+    (box :spacing 6
+      (tg :on {s.profile == "power-saver"} :ic "󰌪" :t "IDLE"
+          :cmd "~/.config/eww/reactor/scripts/profile.sh power-saver")
+      (tg :on {s.profile == "balanced"} :ic "☢" :t "ON"
+          :cmd "~/.config/eww/reactor/scripts/profile.sh balanced")
+      (tg :on {s.profile == "performance"} :ic "󰈸" :t "MAX" :cls "max"
+          :cmd "~/.config/eww/reactor/scripts/profile.sh performance"))
+
+    (sec :t "CONTAINMENT")
+    (box :orientation "v" :spacing 6
+      (box :spacing 6
+        (tg :on {s.vpn} :ic "󰌾" :t "VPN"
+            :cmd "~/.config/waybar/scripts/tailscale.sh toggle")
+        (tg :on {s.bt} :ic "󰂯" :t "BT"
+            :cmd "bluetoothctl show | grep -q 'Powered: yes' && bluetoothctl power off || bluetoothctl power on"))
+      (box :spacing 6
+        (tg :on {!s.vol_muted} :ic {s.vol_muted ? "󰝟" : "󰕾"} :t "${s.vol}%"
+            :cmd "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")
+        (tg :on {!s.mic_muted} :ic {s.mic_muted ? "󰍭" : "󰍬"} :t "MIC"
+            :cmd "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle")))
+
+    ;; ---- power draw ----
+    (sec :t "POWER GRID")
+    (box :class "card" :orientation "v" :space-evenly false :spacing 4
+      (box :space-evenly false
+        (label :class "big" :halign "start" :hexpand true :text "${d.pw.core} W")
+        (label :class "dimtxt" :valign "end" :text "cpu + gpu"))
+      (graph :class "pgraph" :value {d.pw.core} :time-range "60s" :min 0 :max 500
+             :dynamic true :thickness 2 :line-style "round" :height 34)
+      (box :space-evenly false
+        (label :class "dimtxt" :halign "start" :hexpand true :text "CPU")
+        (label :text {d.pw.cpu_ok ? "${d.pw.cpu} W" : "locked"}))
+      (box :space-evenly false
+        (label :class "dimtxt" :halign "start" :hexpand true :text "GPU")
+        (label :text "${d.pw.gpu} W / ${d.gpux.wmax} W")))
+
+    ;; ---- gpu details ----
+    (sec :t "GPU · RTX 5080")
+    (box :class "card" :orientation "v" :space-evenly false :spacing 4
+      (box :space-evenly false
+        (label :class "dimtxt" :halign "start" :hexpand true :text "VRAM")
+        (label :text "${d.gpux.vu} / ${d.gpux.vt} GB"))
+      (progress :class "fbar" :value {d.gpux.vp} :orientation "h")
+      (box :space-evenly false
+        (label :class "dimtxt" :halign "start" :hexpand true :text "CORE CLK")
+        (label :text "${d.gpux.clk} MHz"))
+      (box :space-evenly false
+        (label :class "dimtxt" :halign "start" :hexpand true :text "MEM CLK")
+        (label :text "${d.gpux.mclk} MHz"))
+      (box :space-evenly false
+        (label :class "dimtxt" :halign "start" :hexpand true :text "LOAD · TEMP")
+        (label :text "${d.gpu.l}% · ${d.gpu.t}°C")))
+
+    ;; ---- network ----
+    (sec :t "UPLINK · ${d.net.if}")
+    (box :class "card" :orientation "v" :space-evenly false :spacing 4
+      (box :space-evenly false
+        (label :class "netv" :halign "start" :hexpand true :text "↓ ${d.net.down}")
+        (label :class "netv up" :text "↑ ${d.net.up}"))
+      (graph :class "ngraph" :value {d.net.down_k} :time-range "60s" :min 0 :max 1024
+             :dynamic true :thickness 2 :line-style "round" :height 28))
+
+    ;; ---- updates ----
+    (sec :t "MAINTENANCE")
+    (box :class "card upd ${u.total > 0 ? 'pending' : ''}" :orientation "v" :space-evenly false :spacing 5
+      (box :space-evenly false
+        (label :class "big" :halign "start" :hexpand true
+               :text {u.total < 0 ? "…" : u.total == 0 ? "✓ CURRENT" : "${u.total}"})
+        (label :class "dimtxt" :valign "end"
+               :text {u.total > 0 ? "updates waiting" : "checked ${u.checked}"}))
+      (label :class "dimtxt" :halign "start" :visible {u.total > 0}
+             :text "repo ${u.repo} · aur ${u.aur} · checked ${u.checked}")
+      (label :class "dimtxt" :halign "start" :visible {u.err != ""} :text {u.err})
+      (box :spacing 6
+        (button :class "tg ${u.total > 0 ? 'on' : ''}"
+                :onclick "setsid -f ~/.config/eww/reactor/scripts/updates.sh run"
+                "󰚰  UPDATE")
+        (button :class "tg" :onclick "setsid -f ~/.config/eww/reactor/scripts/updates.sh refresh"
+                "󰑐  CHECK")))
+
+    (box :vexpand true)
+    (button :class "shutdown"
+            :onclick "setsid -f sh -c '~/.config/eww/reactor/scripts/toggle.sh; ~/.config/waybar/scripts/scram.sh'"
+            "󰐥  POWER MENU")))

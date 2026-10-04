@@ -1,0 +1,11 @@
+/* ☢ REACTOR — rofi config */
+configuration {
+  modi:              "drun,run,window";
+  show-icons:        true;
+  display-drun:      "☢ LAUNCH ›";
+  display-run:       "☢ EXEC ›";
+  display-window:    "☢ WINDOWS ›";
+  drun-display-format: "{name}";
+}
+
+@theme "~/.config/rofi/reactor.rasi"

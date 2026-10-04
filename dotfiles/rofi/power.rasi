@@ -1,0 +1,79 @@
+/* ☢ REACTOR — fullscreen power menu */
+@import "~/.config/rofi/reactor.rasi"
+
+window {
+  fullscreen:       true;
+  background-color: #010501e8;
+  border:           0;
+  border-radius:    0;
+  padding:          0;
+}
+
+/* spacers above/below keep the panel vertically centered */
+mainbox {
+  padding:  0 24%;
+  spacing:  22px;
+  children: [ box-top, inputbar, message, listview, textbox-hint, box-bottom ];
+}
+box-top, box-bottom { expand: true; }
+
+inputbar {
+  expand:   false;
+  border:   0;
+  padding:  0;
+  children: [ prompt ];
+}
+prompt {
+  expand:           true;
+  horizontal-align: 0.5;
+  font:             "JetBrainsMono Nerd Font Bold 22";
+  text-color:       @glow;
+}
+
+message {
+  expand:  false;
+  border:  0 0 1px 0;
+  border-color: @deep;
+  padding: 0 0 18px 0;
+}
+textbox { horizontal-align: 0.5; text-color: @dim; font: "JetBrainsMono Nerd Font 12"; }
+
+listview {
+  expand:        false;
+  layout:        vertical;
+  columns:       5;
+  lines:         1;
+  fixed-height:  true;
+  fixed-columns: true;
+  spacing:       20px;
+  cycle:         true;
+}
+
+element {
+  orientation:      vertical;
+  padding:          30px 0 26px 0;
+  border:           2px;
+  border-color:     @dim;
+  border-radius:    4px;
+  background-color: #040e03;
+}
+element normal.normal, element alternate.normal { background-color: #040e03; text-color: @glow; }
+element selected.normal  { background-color: @glow; text-color: #000000; border-color: @glow; }
+element normal.urgent,
+element alternate.urgent { background-color: #040e03; text-color: #ff2a2a; border-color: #ff2a2a; }
+element selected.urgent  { background-color: #ff2a2a; text-color: #000000; border-color: #ff2a2a; }
+
+/* big font sets the row height; labels are shrunk with markup */
+element-text {
+  horizontal-align: 0.5;
+  vertical-align:   0.5;
+  font:             "JetBrainsMono Nerd Font Bold 30";
+}
+
+textbox-hint {
+  expand:           false;
+  str:              "← →  select     enter  confirm     esc  abort";
+  horizontal-align: 0.5;
+  text-color:       @dim;
+  font:             "JetBrainsMono Nerd Font 11";
+}

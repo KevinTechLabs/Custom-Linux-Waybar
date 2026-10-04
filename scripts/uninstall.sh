@@ -1,32 +1,26 @@
 #!/usr/bin/env bash
+# ☢ REACTOR — uninstaller
+# Removes the links this repo created and the small lines it added to your
+# fish / kitty / Hyprland configs. Backups (*.backup-*) are left in place.
 set -euo pipefail
 
-CONFIG_DIR="$HOME/.config"
+ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+CFG="$HOME/.config"
 
-remove_link() {
-    local path="$1"
-    if [[ -L "$path" ]]; then
-        rm "$path"
-        echo "Removed $path"
-    fi
-}
+# links that point into this repo
+while IFS= read -r -d '' l; do
+  [[ $(readlink "$l") == "$ROOT_DIR"/* ]] && rm "$l" && echo "removed ${l/#$HOME/~}"
+done < <(find "$CFG" -type l -print0 2>/dev/null)
 
-remove_link "$CONFIG_DIR/waybar/config.jsonc"
-remove_link "$CONFIG_DIR/waybar/style.css"
-for path in "$CONFIG_DIR"/waybar/scripts/*.sh; do [[ -L "$path" ]] && remove_link "$path"; done
-remove_link "$CONFIG_DIR/waybar/tailscale.sh"
-remove_link "$CONFIG_DIR/waybar/tailscale-toggle.sh"
-remove_link "$CONFIG_DIR/rofi/nuclear.rasi"
-remove_link "$CONFIG_DIR/hypr/hyprland.conf"
-remove_link "$CONFIG_DIR/hypr/hyprlock.conf"
-remove_link "$CONFIG_DIR/hypr/hypridle.conf"
-remove_link "$CONFIG_DIR/kitty/kitty.conf"
-remove_link "$CONFIG_DIR/fastfetch/config.jsonc"
-remove_link "$CONFIG_DIR/btop/btop.conf"
-remove_link "$CONFIG_DIR/btop/themes/nuclear.theme"
-remove_link "$CONFIG_DIR/wlogout/layout"
-remove_link "$CONFIG_DIR/wlogout/style.css"
+# lines we appended
+sed -i -e '/reactor\/reactor.fish/d' -e '/^# ☢ REACTOR/d' \
+       -e 's/^\([[:space:]]*\)# \(fastfetch.*\)  # disabled by REACTOR$/\1\2/' "$CFG/fish/config.fish" 2>/dev/null || true
+sed -i -e '/reactor-kitty.conf/d' -e '/^# ☢ REACTOR/d' "$CFG/kitty/kitty.conf" 2>/dev/null || true
+sed -i -e '/hypr\/reactor.lua/d' -e '/^-- ☢ REACTOR/d' "$CFG/hypr/hyprland.lua" 2>/dev/null || true
+sed -i -e '/hypr\/reactor.conf/d' -e '/^# ☢ REACTOR/d' "$CFG/hypr/hyprland.conf" 2>/dev/null || true
+rm -f "$CFG/hypr/reactor.lua" "$CFG/hypr/reactor.conf"
 
+eww -c "$CFG/eww/reactor" kill >/dev/null 2>&1 || true
 echo
-echo "☢ Nuclear Reactor dotfile links removed."
-echo "Backups created by the installer are left in place."
+echo "☢ REACTOR removed. Your *.backup-* files are untouched — restore any you want."
+echo "  (optional) sudo rm /etc/tmpfiles.d/reactor-rapl.conf"
