@@ -50,9 +50,17 @@ shellv=${1:-$(fish --version 2>/dev/null | awk '{print $3}')}
 
 # ---------- card definitions ----------
 # title | big value | detail label | detail value | bar % | warn level source | warm | hot
+# laptop profile (written by install.sh): battery card instead of GPU
+SECOND="GPU · $gpu|${gtemp}°C|load|${gload}%|$gload|$gtemp|70|83"
+if [[ $(cat "$HOME/.config/reactor/profile" 2>/dev/null) == laptop ]]; then
+  B=$(ls -d /sys/class/power_supply/BAT* 2>/dev/null | head -n1)
+  bpct=$(cat "$B/capacity" 2>/dev/null || echo 0); bst=$(cat "$B/status" 2>/dev/null || echo "no battery")
+  # low charge = danger, so colour by how empty it is (amber ≤25%, red ≤10%)
+  SECOND="BATTERY|${bpct}%|state|${bst,,}|$bpct|$((100 - bpct))|75|90"
+fi
 CARDS=(
   "CPU · $cpu|${ctemp}°C|load|${cload}%|$cload|$ctemp|75|88"
-  "GPU · $gpu|${gtemp}°C|load|${gload}%|$gload|$gtemp|70|83"
+  "$SECOND"
   "RAM|${mused}G|of|${mtot}G|$mpct|$mpct|75|90"
   "DISK|${dused}G|of|${dsize}G|$dpct|$dpct|80|92"
 )

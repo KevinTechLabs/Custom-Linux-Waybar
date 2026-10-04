@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 # ☢ Volume meter for Waybar:  󰕾 [██████░░░░░░░░░░░░░░] 30%
 # class: normal | zero (red) | muted (dim). Updates live via `pactl subscribe`.
+# usage: volume.sh [cells]   (20 on desktop, 10 on the laptop bar)
 
+CELLS=${1:-20}
 DIM="#1f8f0b"; last=""
+cells() { local s="" k; for ((k = 0; k < $2; k++)); do s+=$1; done; printf '%s' "$s"; }
 
 emit() {
   local raw vol muted=0 n bar cls icon
@@ -13,17 +16,14 @@ emit() {
 
   if (( muted )); then
     cls=muted; icon="󰝟"
-    bar="<span foreground='$DIM'>[$(printf '░%.0s' {1..20})]</span> MUTE"
+    bar="<span foreground='$DIM'>[$(cells ░ "$CELLS")]</span> MUTE"
   elif (( vol == 0 )); then
     cls=zero;  icon="󰖁"
-    bar="[$(printf '░%.0s' {1..20})] 0%"                       # whole module goes red via CSS
+    bar="[$(cells ░ "$CELLS")] 0%"                       # whole module goes red via CSS
   else
     cls=normal; icon="󰕾"
-    n=$(( (vol + 4) / 5 )); (( n > 20 )) && n=20
-    local fill="" empty="" k
-    for ((k = 0; k < n; k++)); do fill+="█"; done
-    for ((k = n; k < 20; k++)); do empty+="░"; done
-    bar="<span foreground='$DIM'>[</span>$fill<span foreground='$DIM'>$empty]</span> ${vol}%"
+    n=$(( (vol * CELLS + 99) / 100 )); (( n > CELLS )) && n=$CELLS
+    bar="<span foreground='$DIM'>[</span>$(cells █ "$n")<span foreground='$DIM'>$(cells ░ $((CELLS - n)))]</span> ${vol}%"
   fi
 
   local out

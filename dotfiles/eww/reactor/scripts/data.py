@@ -84,18 +84,20 @@ ctemp = hw_temp("k10temp", "zenpower", "coretemp")
 
 # ---------- GPU ----------
 gload = gtemp = gfan = 0
-gpu = {"w": 0, "wmax": 0, "vu": 0, "vt": 0, "vp": 0, "clk": 0, "mclk": 0}
+gpu = {"w": 0, "wmax": 0, "vu": 0, "vt": 0, "vp": 0, "clk": 0, "mclk": 0, "name": "GPU"}
 g = sh("nvidia-smi", "--query-gpu=utilization.gpu,temperature.gpu,fan.speed,power.draw,"
-       "power.limit,memory.used,memory.total,clocks.gr,clocks.mem",
+       "power.limit,memory.used,memory.total,clocks.gr,clocks.mem,name",
        "--format=csv,noheader,nounits")
 if g:
     def num(x):
         try: return float(x)
         except Exception: return 0.0
-    v = [num(x.strip()) for x in g.splitlines()[0].split(",")] + [0.0] * 9
+    raw = [x.strip() for x in g.splitlines()[0].split(",")]
+    gname = raw[9].replace("NVIDIA ", "").replace("GeForce ", "") if len(raw) > 9 else "GPU"
+    v = [num(x) for x in raw] + [0.0] * 9
     gload, gtemp, gfan = int(v[0]), int(v[1]), int(v[2])
     gpu = {"w": round(v[3]), "wmax": round(v[4]), "vu": round(v[5] / 1024, 1), "vt": round(v[6] / 1024),
-           "vp": round(v[5] * 100 / v[6]) if v[6] else 0, "clk": int(v[7]), "mclk": int(v[8])}
+           "vp": round(v[5] * 100 / v[6]) if v[6] else 0, "clk": int(v[7]), "mclk": int(v[8]), "name": gname}
 else:
     gtemp = hw_temp("amdgpu")
 
@@ -165,6 +167,46 @@ h, r = divmod(r, 3600)
 m = r // 60
 up = (f"{d}d " if d else "") + f"{h}h {m:02d}m"
 
+# ---------- fans (any hwmon fan: thinkpad, asus, dell, nct67xx, it87 …) ----------
+fans = []
+for p, chip in hwmons():
+    for fn in sorted(os.listdir(p)):
+        mm = re.fullmatch(r"fan(\d+)_input", fn)
+        if not mm:
+            continue
+        v = read(os.path.join(p, fn))
+        if not v.isdigit():
+            continue
+        i = mm.group(1)
+        label = read(os.path.join(p, f"fan{i}_label")) or (f"{chip} fan{i}" if chip else f"fan{i}")
+        fans.append({"name": label.upper()[:14], "rpm": int(v)})
+spinning = [f for f in fans if f["rpm"] > 0]
+fan_top = max((f["rpm"] for f in fans), default=-1)          # -1 = no fan sensor
+
+# ---------- battery (laptops) ----------
+bat = {"present": False, "p": 0, "status": "", "w": 0.0, "eta": "", "cls": "ok"}
+bdir = next((os.path.join("/sys/class/power_supply", b) for b in sorted(os.listdir("/sys/class/power_supply"))
+             if b.startswith("BAT")), None) if os.path.isdir("/sys/class/power_supply") else None
+if bdir:
+    def num(name):
+        v = read(os.path.join(bdir, name))
+        return int(v) if v.lstrip("-").isdigit() else None
+    cap, status = num("capacity") or 0, read(os.path.join(bdir, "status"))
+    pw, en, ef = num("power_now"), num("energy_now"), num("energy_full")
+    if pw is None:                                   # charge_* (µAh) × voltage
+        v = num("voltage_now") or 0
+        cur, cn, cf = num("current_now"), num("charge_now"), num("charge_full")
+        pw = cur * v // 1_000_000 if cur is not None else None
+        en = cn * v // 1_000_000 if cn is not None else None
+        ef = cf * v // 1_000_000 if cf is not None else None
+    eta = ""
+    if pw and pw > 0 and en is not None:
+        mins = en * 60 // pw if status == "Discharging" else ((ef - en) * 60 // pw if ef and status == "Charging" else None)
+        if mins is not None:
+            eta = f"{mins // 60}h {mins % 60:02d}m"
+    bat = {"present": True, "p": cap, "status": status, "w": round((pw or 0) / 1e6, 1), "eta": eta,
+           "cls": "charging" if status == "Charging" else "hot" if cap <= 10 else "warm" if cap <= 25 else "ok"}
+
 print(json.dumps({
     "up": up,
     "cpu": {"t": ctemp, "l": load, "cls": level(ctemp, 75, 88)},
@@ -173,6 +215,9 @@ print(json.dumps({
     "ssd": {"p": ssd_p, "t": ssd_t, "cls": level(ssd_p, 80, 92)},
     "gpux": gpu,
     "pw": {"cpu": cpu_w, "gpu": gpu["w"], "core": cpu_w + gpu["w"], "cpu_ok": rapl_ok},
+    "fans": fans, "fan_top": fan_top, "fan_count": len(spinning),
+    "fan_cls": level(fan_top, 4000, 5500) if fan_top > 0 else "ok",
+    "bat": bat,
     "net": {"if": iface or "offline", "down": rate(down), "up": rate(upl),
             "down_k": round(down / 1024), "up_k": round(upl / 1024)},
 }))

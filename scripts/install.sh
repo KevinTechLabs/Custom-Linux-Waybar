@@ -6,6 +6,7 @@
 # reversible additions. Safe to run again at any time.
 #
 #   bash install.sh                       # normal install / update
+#   bash install.sh --laptop | --desktop  # pick a version (default: laptop if a battery exists)
 #   bash install.sh --with-hyprland-conf  # also link the full classic hyprland.conf
 set -euo pipefail
 
@@ -14,9 +15,12 @@ DOT="$ROOT_DIR/dotfiles"
 CFG="$HOME/.config"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 WITH_HYPR_CONF=0
+PROFILE=auto
 for arg in "$@"; do
   case $arg in
     --with-hyprland-conf) WITH_HYPR_CONF=1 ;;
+    --laptop)  PROFILE=laptop ;;
+    --desktop) PROFILE=desktop ;;
     -h|--help) sed -n '2,10p' "$0"; exit 0 ;;
   esac
 done
@@ -35,14 +39,22 @@ link_file() {  # link_file <repo source> <target>
   local src=$1 dst=$2
   mkdir -p "$(dirname "$dst")"
   if [[ -L $dst && "$(readlink -f "$dst")" == "$(readlink -f "$src")" ]]; then return; fi
-  if [[ -e $dst || -L $dst ]]; then
+  if [[ -L $dst && $(readlink "$dst") == "$ROOT_DIR"/* ]]; then rm "$dst"   # our own link (e.g. switching desktop ↔ laptop)
+  elif [[ -e $dst || -L $dst ]]; then
     mv "$dst" "$dst.backup-$STAMP"
     note "backed up ${dst/#$HOME/~}"
   fi
   ln -s "$src" "$dst"
 }
 
-say "Installing REACTOR dotfiles from ${ROOT_DIR/#$HOME/~}"
+if [[ $PROFILE == auto ]]; then
+  saved=$(cat "$CFG/reactor/profile" 2>/dev/null || true)            # remember an earlier choice
+  if [[ $saved == laptop || $saved == desktop ]]; then PROFILE=$saved
+  else PROFILE=desktop; compgen -G "/sys/class/power_supply/BAT*" >/dev/null && PROFILE=laptop
+  fi
+fi
+LAP="$ROOT_DIR/dotfiles-laptop"
+say "Installing REACTOR dotfiles (${PROFILE} version) from ${ROOT_DIR/#$HOME/~}"
 
 # ---------------------------------------------------------------- 1. clean up old links
 # Earlier versions of this repo linked files that no longer exist (wlogout,
@@ -62,8 +74,11 @@ while IFS= read -r -d '' f; do
     kitty/kitty.conf)   [[ -e $CFG/kitty/kitty.conf || -L $CFG/kitty/kitty.conf ]] && \
                         [[ "$(readlink -f "$CFG/kitty/kitty.conf")" != "$f" ]] && continue ;;
   esac
-  link_file "$f" "$CFG/$rel"
+  src=$f
+  [[ $PROFILE == laptop && -f $LAP/$rel ]] && src="$LAP/$rel"
+  link_file "$src" "$CFG/$rel"
 done < <(find "$DOT" -type f -print0)
+mkdir -p "$CFG/reactor" && rm -f "$CFG/reactor/profile" && echo "$PROFILE" > "$CFG/reactor/profile"
 note "linked waybar · rofi · eww · kitty · btop · hyprlock · hypridle · terminal"
 
 # old single-file installs left a plain 'config' that would override config.jsonc
@@ -167,6 +182,7 @@ for pair in waybar:waybar rofi:rofi eww:eww kitty:kitty fish:fish socat:socat \
   if ! command -v "$cmd" >/dev/null && [[ -n $pkg ]]; then need+=("$pkg"); fi
 done
 fc-list 2>/dev/null | grep -qi "JetBrainsMono Nerd" || need+=(ttf-jetbrains-mono-nerd)
+if [[ $PROFILE == laptop ]] && ! command -v brightnessctl >/dev/null; then need+=(brightnessctl); fi
 
 echo
 say "${G}REACTOR ONLINE${R}"

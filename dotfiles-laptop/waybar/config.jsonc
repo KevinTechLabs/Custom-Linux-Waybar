@@ -1,0 +1,167 @@
+// ☢ REACTOR — Waybar config (LAPTOP: no GPU module; volume · brightness · battery meters) (v2)
+{
+  "layer": "top",
+  "position": "top",
+  "height": 34,
+  "margin-top": 6,
+  "margin-left": 10,
+  "margin-right": 10,
+  "spacing": 6,
+
+  "modules-left": ["group/ws", "clock", "custom/scram", "custom/tailscale"],
+  "modules-center": ["custom/cpu", "custom/ram", "custom/reactor", "custom/ssd"],
+  "modules-right": ["group/controls"],
+
+  // Workspaces: our own buttons (hyprctl-driven), grouped into one capsule
+  "group/ws": {
+    "orientation": "horizontal",
+    "modules": ["custom/ws1", "custom/ws2", "custom/ws3", "custom/ws4", "custom/ws5"]
+  },
+
+  "custom/ws1": {
+    "exec": "~/.config/waybar/scripts/ws.sh 1",
+    "return-type": "json",
+    "on-click": "~/.config/waybar/scripts/ws-go.sh 1",
+    "on-scroll-up": "~/.config/waybar/scripts/ws-go.sh e-1",
+    "on-scroll-down": "~/.config/waybar/scripts/ws-go.sh e+1"
+  },
+
+  "custom/ws2": {
+    "exec": "~/.config/waybar/scripts/ws.sh 2",
+    "return-type": "json",
+    "on-click": "~/.config/waybar/scripts/ws-go.sh 2",
+    "on-scroll-up": "~/.config/waybar/scripts/ws-go.sh e-1",
+    "on-scroll-down": "~/.config/waybar/scripts/ws-go.sh e+1"
+  },
+
+  "custom/ws3": {
+    "exec": "~/.config/waybar/scripts/ws.sh 3",
+    "return-type": "json",
+    "on-click": "~/.config/waybar/scripts/ws-go.sh 3",
+    "on-scroll-up": "~/.config/waybar/scripts/ws-go.sh e-1",
+    "on-scroll-down": "~/.config/waybar/scripts/ws-go.sh e+1"
+  },
+
+  "custom/ws4": {
+    "exec": "~/.config/waybar/scripts/ws.sh 4",
+    "return-type": "json",
+    "on-click": "~/.config/waybar/scripts/ws-go.sh 4",
+    "on-scroll-up": "~/.config/waybar/scripts/ws-go.sh e-1",
+    "on-scroll-down": "~/.config/waybar/scripts/ws-go.sh e+1"
+  },
+
+  "custom/ws5": {
+    "exec": "~/.config/waybar/scripts/ws.sh 5",
+    "return-type": "json",
+    "on-click": "~/.config/waybar/scripts/ws-go.sh 5",
+    "on-scroll-up": "~/.config/waybar/scripts/ws-go.sh e-1",
+    "on-scroll-down": "~/.config/waybar/scripts/ws-go.sh e+1"
+  },
+
+  "clock": {
+    "format": "{:%H:%M}",
+    "format-alt": "{:%a %d %b  %H:%M:%S}",
+    "interval": 1,
+    "tooltip-format": "<tt>{calendar}</tt>",
+    "calendar": {
+      "format": { "today": "<span color='#000000' background='#39ff14'><b>{}</b></span>" }
+    }
+  },
+
+  "custom/scram": {
+    "format": "⏻",
+    "tooltip-format": "Power menu",
+    "on-click": "~/.config/waybar/scripts/scram.sh"
+  },
+
+  "custom/tailscale": {
+    "exec": "~/.config/waybar/scripts/tailscale.sh",
+    "return-type": "json",
+    "interval": 5,
+    "signal": 9,
+    "on-click": "~/.config/waybar/scripts/tailscale.sh toggle"
+  },
+
+  "custom/cpu": {
+    "exec": "~/.config/waybar/scripts/stats.sh cpu",
+    "return-type": "json",
+    "interval": 3
+  },
+
+  "custom/ram": {
+    "exec": "~/.config/waybar/scripts/stats.sh ram",
+    "return-type": "json",
+    "interval": 3
+  },
+
+  // Reactor badge = power profile. Click cycles IDLE → ONLINE → OVERDRIVE,
+  // right-click opens the full monitor.
+  "custom/reactor": {
+    "exec": "~/.config/waybar/scripts/power-profile.sh",
+    "return-type": "json",
+    "interval": 10,
+    "signal": 10,
+    "on-click": "~/.config/waybar/scripts/power-profile.sh cycle",
+    "on-click-right": "kitty --class reactor-monitor -e ~/.config/waybar/scripts/reactor-monitor.sh"
+  },
+
+  "custom/ssd": {
+    "exec": "~/.config/waybar/scripts/stats.sh ssd",
+    "return-type": "json",
+    "interval": 30
+  },
+
+  // Volume, brightness and battery meters + mic and Bluetooth in one capsule
+  "group/controls": {
+    "orientation": "horizontal",
+    "modules": ["custom/volume", "custom/brightness", "custom/battery", "pulseaudio#mic", "bluetooth"]
+  },
+
+  "custom/brightness": {
+    "exec": "~/.config/waybar/scripts/brightness.sh 10",
+    "return-type": "json",
+    "interval": 5,
+    "signal": 11,
+    "on-scroll-up": "~/.config/waybar/scripts/brightness.sh up",
+    "on-scroll-down": "~/.config/waybar/scripts/brightness.sh down"
+  },
+
+  "custom/battery": {
+    "exec": "~/.config/waybar/scripts/battery.sh 10",
+    "return-type": "json",
+    "interval": 10,
+    "on-click-right": "~/.config/waybar/scripts/power-profile.sh cycle"
+  },
+
+  "custom/volume": {
+    "exec": "~/.config/waybar/scripts/volume.sh 10",
+    "return-type": "json",
+    "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+    "on-click-right": "pavucontrol -t 3",
+    "on-scroll-up": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+",
+    "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
+  },
+
+  "pulseaudio#mic": {
+    "format": "{format_source}",
+    "format-source": "󰍬 {volume}%",
+    "format-source-muted": "󰍭 MUTE",
+    "tooltip-format": "Mic · click mute · right-click mixer",
+    "on-click": "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle",
+    "on-click-right": "pavucontrol -t 4",
+    "on-scroll-up": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SOURCE@ 5%+",
+    "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%-"
+  },
+
+  "bluetooth": {
+    "format": "󰂯",
+    "format-off": "󰂲",
+    "format-disabled": "󰂲",
+    "format-connected": "󰂱 {num_connections}",
+    "tooltip-format": "Bluetooth {status}",
+    "tooltip-format-connected": "{device_enumerate}",
+    "tooltip-format-enumerate-connected": "{device_alias}",
+    "on-click": "blueman-manager",
+    "on-click-right": "bluetoothctl show | grep -q 'Powered: yes' && bluetoothctl power off || bluetoothctl power on"
+  }
+}

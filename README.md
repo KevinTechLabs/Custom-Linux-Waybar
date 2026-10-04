@@ -49,6 +49,30 @@ A control-room panel that slides out from the left (animated by Hyprland on the 
 
 ---
 
+## 💻 Laptop version
+
+<p align="center">
+  <img src="preview-laptop.webp" alt="REACTOR laptop version: no GPU module, volume, brightness and battery meters, sidebar with fan RPM and battery power grid" width="100%">
+</p>
+
+Same design, tuned for laptops. The installer picks it **automatically when a battery is found**
+(or force it with `--laptop` / `--desktop`, and it remembers your choice on updates).
+
+| | 🖥️ Desktop | 💻 Laptop |
+|---|---|---|
+| **Bar center** | CPU · RAM · ☢️ · GPU · SSD | CPU · RAM · ☢️ · SSD |
+| **Bar right** | 🔊 volume meter | 🔊 volume · ☀️ brightness · 🔋 battery meters |
+| **Sidebar core** | CPU · RAM · GPU · SSD | CPU · RAM · SSD · 🌀 **fan RPM** |
+| **Power grid** | CPU + GPU watts | 🔋 battery draw · time left · CPU watts |
+| **Sidebar extras** | 🎮 GPU details | 🌀 cooling (every fan's RPM) |
+| **Terminal** | GPU card | 🔋 battery card |
+
+- 🔋 Battery meter pulses while charging, turns **amber at 25%** and **flashes red at 10%** — hover for watts and time left
+- ☀️ Scroll the brightness meter to adjust (never goes fully black)
+- 🖱️ Right-click the battery to cycle power profiles
+
+---
+
 ## 🛠️ Install
 
 ```bash
@@ -72,6 +96,7 @@ The installer:
 sudo pacman -S --needed waybar rofi eww kitty fish socat pacman-contrib \
   power-profiles-daemon wireplumber pavucontrol bluez-utils tailscale \
   ttf-jetbrains-mono-nerd
+# laptops also: brightnessctl
 ```
 
 `eww` may be in the AUR on some systems (`paru -S eww`). Tailscale is optional.
@@ -84,6 +109,12 @@ sudo cp system/reactor-rapl.conf /etc/tmpfiles.d/ && sudo systemd-tmpfiles --cre
 ```
 
 Delete `/etc/tmpfiles.d/reactor-rapl.conf` to undo it.
+
+### 💻 Pick a version
+
+```bash
+bash install.sh --laptop    # or --desktop  (default: laptop if a battery exists)
+```
 
 ### 🪟 Optional: full Hyprland config
 By default the installer only *adds* to your existing Hyprland config. If you want
@@ -120,6 +151,7 @@ bash uninstall.sh        # remove links and added lines; backups stay
 
 ```text
 Custom-Linux-Waybar/
+├── dotfiles-laptop/          # laptop overrides (waybar config, sidebar)
 ├── dotfiles/                 # mirrors ~/.config
 │   ├── waybar/               # config.jsonc, style.css, scripts/
 │   ├── eww/reactor/          # Super+Z sidebar
@@ -131,7 +163,7 @@ Custom-Linux-Waybar/
 ├── extras/                   # wallpaper generator script
 ├── scripts/                  # install · update · uninstall
 ├── install.sh  uninstall.sh
-└── preview.webp
+└── preview.webp · preview-laptop.webp
 ```
 
 ## 🎨 Palette
@@ -152,6 +184,7 @@ Custom-Linux-Waybar/
 - 🖱️ **Workspace clicks / log out do nothing** — Hyprland 0.55+ with a Lua config changed `hyprctl dispatch`; the included scripts handle both, so re-run `bash install.sh`.
 - 🎛️ **Super+Z does nothing** — reload Hyprland. Test directly with `~/.config/eww/reactor/scripts/toggle.sh`.
 - 📟 **Old fastfetch still shows** — another file is printing it; the installer only comments out `fastfetch` lines in `config.fish`.
+- 🌀 **Fan shows N/A** — your laptop doesn't expose a fan sensor; check with `sensors` (ThinkPads, ASUS and Dell usually do).
 - 🌡️ **Temps show 0** — CPU temps need `k10temp` / `coretemp`; GPU readings need `nvidia-smi` (NVIDIA) or `amdgpu`.
 
 ☢️ Built for CachyOS + Hyprland. Most pieces work on any Arch-based Wayland setup.

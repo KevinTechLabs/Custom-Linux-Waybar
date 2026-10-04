@@ -18,7 +18,7 @@ sed -i -e '/reactor\/reactor.fish/d' -e '/^# ☢ REACTOR/d' \
 sed -i -e '/reactor-kitty.conf/d' -e '/^# ☢ REACTOR/d' "$CFG/kitty/kitty.conf" 2>/dev/null || true
 sed -i -e '/hypr\/reactor.lua/d' -e '/^-- ☢ REACTOR/d' "$CFG/hypr/hyprland.lua" 2>/dev/null || true
 sed -i -e '/hypr\/reactor.conf/d' -e '/^# ☢ REACTOR/d' "$CFG/hypr/hyprland.conf" 2>/dev/null || true
-rm -f "$CFG/hypr/reactor.lua" "$CFG/hypr/reactor.conf"
+rm -f "$CFG/hypr/reactor.lua" "$CFG/hypr/reactor.conf" "$CFG/reactor/profile"
 
 eww -c "$CFG/eww/reactor" kill >/dev/null 2>&1 || true
 echo

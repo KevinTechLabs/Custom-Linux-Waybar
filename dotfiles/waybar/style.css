@@ -108,13 +108,25 @@ tooltip { background: @bg; border: 1px solid @glow; color: @glow; }
 
 /* volume · mic · bluetooth */
 #controls { padding: 0 4px; }
-#custom-volume, #pulseaudio, #bluetooth {
+#custom-volume, #custom-brightness, #custom-battery, #pulseaudio, #bluetooth {
   background: transparent; color: @glow;
   padding: 0 8px; margin: 3px 1px; border-radius: 2px;
 }
-#custom-volume:hover, #pulseaudio:hover, #bluetooth:hover { background: @deep; }
+#custom-volume:hover, #custom-brightness:hover, #custom-battery:hover,
+#pulseaudio:hover, #bluetooth:hover { background: @deep; }
 #custom-volume.muted { color: @dim; }
 #custom-volume.zero  { color: @red; }
 #pulseaudio.muted, #pulseaudio.mic.source-muted,
 #bluetooth.off, #bluetooth.disabled { color: @dim; }
 #bluetooth.connected { color: #000000; background: @glow; }
+
+/* laptop: battery states */
+#custom-battery.charging { animation: charge 2s ease-in-out infinite; }
+#custom-battery.warm { color: @amber; }
+#custom-battery.hot  { color: #000000; background: @red; animation: alarm 0.8s steps(2) infinite; }
+#custom-brightness.missing, #custom-battery.missing { color: @dim; }
+@keyframes charge {
+  0%   { color: @glow; }
+  50%  { color: @dim; }
+  100% { color: @glow; }
+}

@@ -87,3 +87,7 @@ $red:   #ff2a2a;
 .netv   { font-size: 12px; &.up { color: $dim; } }
 .pgraph, .ngraph { color: $glow; background-color: rgba(15, 61, 8, 0.35); margin: 2px 0; }
 .upd.pending { border-color: $amber; .big { color: $amber; } }
+// ---- laptop battery states ----
+.bat-warm .big, .bat-warm .batv { color: $amber; }
+.bat-hot { border-color: $red; .big, .batv { color: $red; } }
+.bat-charging .batv { color: $glow; }

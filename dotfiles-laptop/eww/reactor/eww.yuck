@@ -1,8 +1,8 @@
-;; ☢ REACTOR — core schematic sidebar (Super+Z)
+;; ☢ REACTOR — core schematic sidebar (Super+Z) · LAPTOP: CPU / RAM / SSD / FAN, battery power grid
 ;; Lives in ~/.config/eww/reactor so it never clashes with another eww setup.
 
 (defpoll d :interval "2s"
-  :initial '{"up":"--","cpu":{"t":0,"l":0,"cls":"ok"},"gpu":{"t":0,"l":0,"cls":"ok"},"ram":{"p":0,"cls":"ok"},"ssd":{"p":0,"t":0,"cls":"ok"},"gpux":{"w":0,"wmax":0,"vu":0,"vt":0,"vp":0,"clk":0,"mclk":0,"name":"GPU"},"pw":{"cpu":0,"gpu":0,"core":0,"cpu_ok":false},"net":{"if":"--","down":"0 B/s","up":"0 B/s","down_k":0,"up_k":0}}'
+  :initial '{"up":"--","cpu":{"t":0,"l":0,"cls":"ok"},"gpu":{"t":0,"l":0,"cls":"ok"},"ram":{"p":0,"cls":"ok"},"ssd":{"p":0,"t":0,"cls":"ok"},"gpux":{"w":0,"wmax":0,"vu":0,"vt":0,"vp":0,"clk":0,"mclk":0,"name":"GPU"},"pw":{"cpu":0,"gpu":0,"core":0,"cpu_ok":false},"net":{"if":"--","down":"0 B/s","up":"0 B/s","down_k":0,"up_k":0},"fans":[],"fan_top":-1,"fan_count":0,"fan_cls":"ok","bat":{"present":false,"p":0,"status":"","w":0,"eta":"","cls":"ok"}}'
   "~/.config/eww/reactor/scripts/data.py fast")
 
 (defpoll s :interval "3s"
@@ -48,8 +48,8 @@
       (image :class "trefoil" :path "${EWW_CONFIG_DIR}/trefoil.png"
              :image-width 104 :image-height 104))
     (box :orientation "v" :space-evenly true :spacing 34 :valign "center"
-      (stat :k "GPU" :v "${d.gpu.t}°C" :cls {d.gpu.cls})
-      (stat :k "SSD" :v "${d.ssd.p}%" :cls {d.ssd.cls}))))
+      (stat :k "SSD" :v "${d.ssd.p}%" :cls {d.ssd.cls})
+      (stat :k "FAN" :v {d.fan_top < 0 ? "N/A" : "${d.fan_top}"} :cls {d.fan_cls}))))
 
 ;; ---------------------------------------------------------------- panel
 (defwidget panel []
@@ -63,7 +63,7 @@
     (core)
     (box :class "loads" :spacing 8
       (label :text "cpu load ${d.cpu.l}%")
-      (label :text "gpu load ${d.gpu.l}%"))
+      (label :text {d.fan_top < 0 ? "no fan sensor" : "fan rpm · ${d.fan_count} spinning"}))
 
     (sec :t "REACTOR MODE")
     (box :spacing 6
@@ -87,37 +87,36 @@
         (tg :on {!s.mic_muted} :ic {s.mic_muted ? "󰍭" : "󰍬"} :t "MIC"
             :cmd "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle")))
 
-    ;; ---- power draw ----
+;; ---- power draw: battery when unplugged, CPU package otherwise ----
     (sec :t "POWER GRID")
-    (box :class "card" :orientation "v" :space-evenly false :spacing 4
+    (box :class "card bat-${d.bat.cls}" :orientation "v" :space-evenly false :spacing 4
       (box :space-evenly false
-        (label :class "big" :halign "start" :hexpand true :text "${d.pw.core} W")
-        (label :class "dimtxt" :valign "end" :text "cpu + gpu"))
-      (graph :class "pgraph" :value {d.pw.core} :time-range "60s" :min 0 :max 500
+        (label :class "big" :halign "start" :hexpand true
+               :text {d.bat.status == "Discharging" ? "${d.bat.w} W" : (d.pw.cpu_ok ? "${d.pw.cpu} W" : "${d.bat.p}%")})
+        (label :class "dimtxt" :valign "end"
+               :text {d.bat.status == "Discharging" ? "battery draw" : (d.pw.cpu_ok ? "cpu package" : "battery")}))
+      (graph :class "pgraph" :value {d.bat.status == "Discharging" ? d.bat.w : d.pw.cpu} :time-range "60s" :min 0 :max 60
              :dynamic true :thickness 2 :line-style "round" :height 34)
       (box :space-evenly false
         (label :class "dimtxt" :halign "start" :hexpand true :text "CPU")
         (label :text {d.pw.cpu_ok ? "${d.pw.cpu} W" : "locked"}))
-      (box :space-evenly false
-        (label :class "dimtxt" :halign "start" :hexpand true :text "GPU")
-        (label :text "${d.pw.gpu} W / ${d.gpux.wmax} W")))
+      (box :space-evenly false :visible {d.bat.present}
+        (label :class "dimtxt" :halign "start" :hexpand true :text "BATTERY")
+        (label :class "batv" :text "${d.bat.p}% · ${d.bat.status}"))
+      (box :space-evenly false :visible {d.bat.eta != ""}
+        (label :class "dimtxt" :halign "start" :hexpand true
+               :text {d.bat.status == "Charging" ? "FULL IN" : "TIME LEFT"})
+        (label :text {d.bat.eta})))
 
-    ;; ---- gpu details ----
-    (sec :t "GPU · ${d.gpux.name}")
+    ;; ---- cooling: every fan the laptop reports ----
+    (sec :t "COOLING")
     (box :class "card" :orientation "v" :space-evenly false :spacing 4
-      (box :space-evenly false
-        (label :class "dimtxt" :halign "start" :hexpand true :text "VRAM")
-        (label :text "${d.gpux.vu} / ${d.gpux.vt} GB"))
-      (progress :class "fbar" :value {d.gpux.vp} :orientation "h")
-      (box :space-evenly false
-        (label :class "dimtxt" :halign "start" :hexpand true :text "CORE CLK")
-        (label :text "${d.gpux.clk} MHz"))
-      (box :space-evenly false
-        (label :class "dimtxt" :halign "start" :hexpand true :text "MEM CLK")
-        (label :text "${d.gpux.mclk} MHz"))
-      (box :space-evenly false
-        (label :class "dimtxt" :halign "start" :hexpand true :text "LOAD · TEMP")
-        (label :text "${d.gpu.l}% · ${d.gpu.t}°C")))
+      (label :class "dimtxt" :halign "start" :visible {arraylength(d.fans) == 0}
+             :text "no fan sensors found")
+      (for f in {d.fans}
+        (box :space-evenly false
+          (label :class "dimtxt" :halign "start" :hexpand true :text {f.name})
+          (label :text {f.rpm == 0 ? "IDLE" : "${f.rpm} RPM"}))))
 
     ;; ---- network ----
     (sec :t "UPLINK · ${d.net.if}")
