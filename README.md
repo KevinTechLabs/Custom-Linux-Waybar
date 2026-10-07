@@ -1,7 +1,7 @@
 # ☢️ Custom-Linux-Waybar — REACTOR
 
 <p align="center">
-  <img src="preview.webp" alt="REACTOR desktop: green nuclear-reactor Waybar, Super+Z sidebar and terminal dashboard over a radiation-symbol wallpaper" width="100%">
+  <img src="preview-desktop-v2.webp" alt="REACTOR desktop: green nuclear-reactor Waybar, Super+Z sidebar and terminal dashboard over a radiation-symbol wallpaper" width="100%">
 </p>
 
 A complete **nuclear-reactor themed Hyprland rice** for CachyOS / Arch Linux. 🐧⚡
@@ -52,7 +52,7 @@ A control-room panel that slides out from the left (animated by Hyprland on the 
 ## 💻 Laptop version
 
 <p align="center">
-  <img src="preview-laptop.webp" alt="REACTOR laptop version: no GPU module, volume, brightness and battery meters, sidebar with fan RPM and battery power grid" width="100%">
+  <img src="preview-laptop-v2.webp" alt="REACTOR laptop version: no GPU module, volume, brightness and battery meters, sidebar with fan RPM and battery power grid" width="100%">
 </p>
 
 Same design, tuned for laptops. The installer picks it **automatically when a battery is found**
@@ -164,7 +164,7 @@ Custom-Linux-Waybar/
 ├── extras/                   # wallpaper generator script
 ├── scripts/                  # install · update · uninstall
 ├── install.sh  uninstall.sh
-└── preview.webp · preview-laptop.webp
+└── preview-desktop-v2.webp · preview-laptop-v2.webp
 ```
 
 ## 🎨 Palette
