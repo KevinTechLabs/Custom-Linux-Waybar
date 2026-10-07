@@ -1,7 +1,7 @@
 # ☢️ Custom-Linux-Waybar — REACTOR
 
 <p align="center">
-  <img src="preview.webp" alt="REACTOR desktop: green nuclear-reactor Waybar, Super+Z sidebar, terminal dashboard and 4K wallpaper" width="100%">
+  <img src="preview.webp" alt="REACTOR desktop: green nuclear-reactor Waybar, Super+Z sidebar and terminal dashboard over a radiation-symbol wallpaper" width="100%">
 </p>
 
 A complete **nuclear-reactor themed Hyprland rice** for CachyOS / Arch Linux. 🐧⚡
